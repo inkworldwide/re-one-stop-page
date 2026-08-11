@@ -8,6 +8,7 @@ import {
   X, Check, RotateCcw, ChevronLeft, ChevronRight 
 } from "lucide-react";
 import PropertyCard from "./PropertyCard";
+import AdSidebarColumn from "@/components/ads/AdSidebarColumn";
 
 // Dynamic import of Leaflet MapComponent to disable Server-Side Rendering
 const MapComponent = dynamic(() => import("./MapComponent"), {
@@ -377,21 +378,31 @@ export default function SearchContent() {
           <>
             {/* 1. GRID VIEW */}
             {viewMode === "grid" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {properties.map(p => (
-                  <PropertyCard key={p.id} property={p} />
-                ))}
+              <div className="flex flex-col lg:flex-row gap-8 items-start">
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+                  {properties.map(p => (
+                    <PropertyCard key={p.id} property={p} />
+                  ))}
+                </div>
+                <div className="w-full lg:w-72 xl:w-80 shrink-0">
+                  <AdSidebarColumn page="properties" />
+                </div>
               </div>
             )}
 
             {/* 2. LIST VIEW */}
             {viewMode === "list" && (
-              <div className="flex flex-col gap-6 max-w-4xl mx-auto">
-                {properties.map(p => (
-                  <div key={p.id} className="w-full">
-                    <PropertyCard property={p} />
-                  </div>
-                ))}
+              <div className="flex flex-col lg:flex-row gap-8 items-start">
+                <div className="flex-1 flex flex-col gap-6 w-full">
+                  {properties.map(p => (
+                    <div key={p.id} className="w-full">
+                      <PropertyCard property={p} />
+                    </div>
+                  ))}
+                </div>
+                <div className="w-full lg:w-72 xl:w-80 shrink-0">
+                  <AdSidebarColumn page="properties" />
+                </div>
               </div>
             )}
 

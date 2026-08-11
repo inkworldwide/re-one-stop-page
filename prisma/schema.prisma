@@ -509,3 +509,42 @@ model Favourite {
   @@index([userId])
   @@index([propertyId])
 }
+
+// ─────────────────────────────────────────
+// ADDS BUZZ (ADVERTISEMENTS)
+// ─────────────────────────────────────────
+
+enum AdPlacement {
+  HOME_ONLY
+  INNER_ONLY
+  BOTH
+  PROPERTIES_ONLY
+  PROPERTY_DETAIL_ONLY
+}
+
+enum AdFormat {
+  FULL_WIDTH
+  HALF_WIDTH
+  QUAD_GRID
+}
+
+model Advertisement {
+  id           String      @id @default(uuid())
+  name         String
+  imageUrl     String
+  targetUrl    String
+  placement    AdPlacement @default(BOTH)
+  format       AdFormat    @default(FULL_WIDTH)
+  isExclusive  Boolean     @default(false)
+  isActive     Boolean     @default(true)
+  displayOrder Int         @default(0)
+  clickCount   Int         @default(0)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([placement])
+  @@index([isActive])
+  @@index([displayOrder])
+  @@index([isExclusive])
+}
+

@@ -5,6 +5,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PropertyCard from "@/components/property/PropertyCard";
 import PostListingButton from "@/components/ui/PostListingButton";
+import AdSidebarColumn from "@/components/ads/AdSidebarColumn";
 import { 
   Building, MapPin, Search, ShieldCheck, Heart, ArrowRight, 
   Sparkles, Layers, Users, PhoneCall, CheckCircle2, Star, Award,
@@ -140,7 +141,12 @@ export default async function HomePage() {
     <div className="min-h-screen bg-secondary flex flex-col text-left">
       <Navbar />
 
-      {/* 1. HERO SECTION */}
+      {/* ── MAIN BODY CONTENT & RIGHT AD SIDEBAR COLUMN (Starts alongside Hero) ── */}
+      <div className="max-w-[1440px] mx-auto w-full px-4 sm:px-6 md:px-8 py-6 grid grid-cols-1 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_320px] gap-8 items-start">
+        {/* Left Content Column */}
+        <div className="space-y-12 min-w-0">
+
+          {/* 1. HERO SECTION */}
       <section className="relative w-full h-[600px] bg-primary overflow-hidden flex flex-col md:flex-row">
         {/* Left Text Content */}
         <div className="absolute left-0 top-0 bottom-0 w-full md:w-[45%] z-20 flex flex-col justify-center px-8 md:px-12 lg:px-20 bg-gradient-to-r from-primary via-primary/95 to-transparent pointer-events-none">
@@ -571,6 +577,12 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+        </div>
+
+        {/* Right Column: Adds Buzz Banner Column */}
+        <AdSidebarColumn page="home" className="hidden lg:block" title="FEATURED BUZZ" />
+      </div>
 
       {/* 9. FINAL CTA SECTION */}
       <section className="py-16 bg-primary text-secondary border-t border-line text-center">

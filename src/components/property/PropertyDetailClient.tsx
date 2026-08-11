@@ -11,6 +11,7 @@ import {
   Wifi, Dumbbell, Car, Waves, Shield, Zap, ArrowUpDown, Leaf, Home, Flame, Droplet, TreePine, Droplets, Camera
 } from "lucide-react";
 import PropertyCard from "./PropertyCard";
+import AdSidebarColumn from "@/components/ads/AdSidebarColumn";
 
 // Dynamic import of Leaflet circle map
 const DetailMap = dynamic(() => import("./DetailMap"), {
@@ -1439,6 +1440,9 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
               </div>
             );
           })()}
+
+          {/* Sponsored Ad Banner Column */}
+          <AdSidebarColumn page="property_detail" />
         </div>
 
       </div>

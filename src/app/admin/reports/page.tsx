@@ -110,7 +110,7 @@ export default function AdminReportsPage() {
     <div className="space-y-6 text-left">
       <div>
         <h2 className="font-serif text-xl sm:text-2xl text-primary font-semibold flex items-center gap-2">
-          <ShieldAlert className="w-6 h-6 text-red-500" /> Listing Reports
+          <ShieldAlert className="w-6 h-6 text-red-500" /> Property Reports
         </h2>
         <p className="text-xs text-slate-500 mt-1">Review moderation flags filed by verified seekers regarding suspicious, fake, or spam listings.</p>
       </div>
