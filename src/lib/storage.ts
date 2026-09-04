@@ -4,11 +4,37 @@ import { v2 as cloudinary } from "cloudinary";
 
 // Storage abstraction interface
 export interface StorageService {
-  uploadImage(file: File | Buffer, fileName: string): Promise<{ url: string; publicId: string }>;
+  uploadImage(file: any, fileName: string): Promise<{ url: string; publicId: string }>;
   deleteImage(publicId: string): Promise<boolean>;
 }
 
-// Local Disk Storage Service Implementation (with base64 fallback for serverless/Vercel)
+/**
+ * Safely extracts a Node Buffer and MimeType from any file object (File, Blob, Buffer, or Data URL)
+ * across both browser-like and Node.js serverless runtimes.
+ */
+async function getBufferAndMime(file: any): Promise<{ buffer: Buffer; mimeType: string }> {
+  if (Buffer.isBuffer(file)) {
+    return { buffer: file, mimeType: "image/jpeg" };
+  }
+  if (file && typeof file.arrayBuffer === "function") {
+    const arrayBuffer = await file.arrayBuffer();
+    const mimeType = file.type || "image/jpeg";
+    return { buffer: Buffer.from(arrayBuffer), mimeType };
+  }
+  if (typeof file === "string" && file.startsWith("data:")) {
+    const matches = file.match(/^data:(.+);base64,(.+)$/);
+    if (matches) {
+      return { buffer: Buffer.from(matches[2], "base64"), mimeType: matches[1] };
+    }
+  }
+  // Fallback if file is object with buffer/stream
+  if (file && file.buffer && Buffer.isBuffer(file.buffer)) {
+    return { buffer: file.buffer, mimeType: file.mimetype || "image/jpeg" };
+  }
+  throw new Error("Unable to extract buffer from uploaded file object");
+}
+
+// Local Disk Storage Service Implementation (with base64 Data URL fallback for Vercel/serverless)
 class LocalStorageService implements StorageService {
   private uploadDir = path.join(process.cwd(), "public", "uploads");
 
@@ -22,19 +48,11 @@ class LocalStorageService implements StorageService {
     }
   }
 
-  async uploadImage(file: File | Buffer, fileName: string): Promise<{ url: string; publicId: string }> {
-    let buffer: Buffer;
-    let mimeType = "image/jpeg";
-    if (file instanceof File) {
-      const arrayBuffer = await file.arrayBuffer();
-      buffer = Buffer.from(arrayBuffer);
-      mimeType = file.type || "image/jpeg";
-    } else {
-      buffer = file;
-    }
+  async uploadImage(file: any, fileName: string): Promise<{ url: string; publicId: string }> {
+    const { buffer, mimeType } = await getBufferAndMime(file);
 
     try {
-      const extension = fileName.split(".").pop() || "jpg";
+      const extension = (fileName || "image.jpg").split(".").pop() || "jpg";
       const uniqueName = `${Math.random().toString(36).substring(2, 9)}-${Date.now()}.${extension}`;
       const filePath = path.join(this.uploadDir, uniqueName);
 
@@ -76,17 +94,9 @@ class CloudinaryStorageService implements StorageService {
     });
   }
 
-  async uploadImage(file: File | Buffer, fileName: string): Promise<{ url: string; publicId: string }> {
+  async uploadImage(file: any, fileName: string): Promise<{ url: string; publicId: string }> {
     try {
-      let buffer: Buffer;
-      let mimeType = "image/jpeg";
-      if (file instanceof File) {
-        const arrayBuffer = await file.arrayBuffer();
-        buffer = Buffer.from(arrayBuffer);
-        mimeType = file.type || "image/jpeg";
-      } else {
-        buffer = file;
-      }
+      const { buffer, mimeType } = await getBufferAndMime(file);
 
       // Convert buffer to base64 data URL for Cloudinary upload
       const base64Data = `data:${mimeType};base64,${buffer.toString("base64")}`;

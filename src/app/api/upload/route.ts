@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { storageService } from "@/lib/storage";
 import { getAuthenticatedUser } from "@/lib/auth";
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
-const MAX_VIDEO_SIZE = 20 * 1024 * 1024; // 20 MB
-const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50 MB
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/jpg", "image/gif", "image/svg+xml"];
 const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/ogg", "video/quicktime"];
 
 export async function POST(req: Request) {
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 
     if (user.role === "USER") {
       return NextResponse.json(
-        { error: "Access denied. Only owners or agents can upload files." },
+        { error: "Access denied. Only admins, owners, or agents can upload files." },
         { status: 403 }
       );
     }
@@ -27,34 +27,39 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const file = formData.get("file");
 
-    if (!file || !(file instanceof File)) {
+    if (!file || typeof (file as any).arrayBuffer !== "function") {
       return NextResponse.json(
-        { error: "No file was uploaded." },
+        { error: "No valid file was uploaded." },
         { status: 400 }
       );
     }
 
-    const isVideo = ALLOWED_VIDEO_TYPES.includes(file.type);
-    const isImage = ALLOWED_IMAGE_TYPES.includes(file.type);
+    const uploadedFile = file as any;
+    const fileName = uploadedFile.name || "uploaded_file.jpg";
+    const fileType = uploadedFile.type || "image/jpeg";
+    const fileSize = uploadedFile.size || 0;
+
+    const isVideo = ALLOWED_VIDEO_TYPES.includes(fileType);
+    const isImage = ALLOWED_IMAGE_TYPES.includes(fileType);
 
     if (!isImage && !isVideo) {
       return NextResponse.json(
-        { error: "Invalid file type. Only JPEG/PNG/WEBP images and MP4/WEBM/MOV videos are allowed." },
+        { error: `Invalid file type (${fileType}). Only JPEG/PNG/WEBP images are allowed.` },
         { status: 400 }
       );
     }
 
     // Validate file size
     const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
-    if (file.size > maxSize) {
+    if (fileSize > maxSize) {
       return NextResponse.json(
-        { error: `File size exceeds the limit (${isVideo ? "20MB" : "5MB"}).` },
+        { error: `File size exceeds the limit (${isVideo ? "50MB" : "10MB"}).` },
         { status: 400 }
       );
     }
 
     // Upload using storage service abstraction
-    const uploadResult = await storageService.uploadImage(file, file.name);
+    const uploadResult = await storageService.uploadImage(file, fileName);
 
     return NextResponse.json({
       message: "Image uploaded successfully",
@@ -64,7 +69,7 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error("Upload route error:", error);
     return NextResponse.json(
-      { error: "An unexpected error occurred during file upload." },
+      { error: error?.message || "An unexpected error occurred during file upload." },
       { status: 500 }
     );
   }
